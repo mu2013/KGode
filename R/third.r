@@ -106,12 +106,14 @@ third = function(lam,kkk,bbb,crtype,woption,dtilda)
 	   }
 	else if(crtype=='i3'){ 
 	   	   iterp$iterate(20,3,lam)
-	       oppar3=iterp$opfull( lam)  
-	       oppar = tail(oppar3[[1]],npar)  
+	       oppar3=iterp$opfull( lam) 
+	       lenop = length(oppar3[[1]]) 
+	       oppar = oppar3[[1]][(lenop-npar+1):lenop] #tail(oppar3[[1]],npar)  
 	    }
 	 else if( crtype=='3'){
 	       oppar3=iterp$opfull( lam)
-	       oppar = tail(oppar3[[1]],npar)
+	       lenop = length(oppar3[[1]])
+	       oppar = oppar3[[1]][(lenop-npar+1):lenop] #tail(oppar3[[1]],npar)
 	   }
     } else if(woption=='w')
     { print('wwww')
@@ -122,11 +124,13 @@ third = function(lam,kkk,bbb,crtype,woption,dtilda)
 	 else if(crtype=='i3'){ 
 	   	   iterp$witerate(20,3,dtilda,lam)
 	       oppar3=iterp$wopfull( lam,dtilda ) 
-	       oppar = tail(oppar3[[1]],npar)   
+	       lenop = length(oppar3[[1]])
+	       oppar = oppar3[[1]][(lenop-npar+1):lenop] #tail(oppar3[[1]],npar)   
 	    }
 	 else if( crtype=='3'){
 	       oppar3=iterp$wopfull( lam,dtilda )
-	       oppar = tail(oppar3[[1]],npar)
+	       lenop = length(oppar3[[1]])
+	       oppar = oppar3[[1]][(lenop-npar+1):lenop] #tail(oppar3[[1]],npar)
 	   }
     }
   return(list("oppar" = oppar,"rk3"=iterp))

@@ -2,7 +2,7 @@ Package: KGode
 Title: Parameter inference in dynamical systems (ordinary differential equations)
 Version: 1.0.0
 Authors@R: person("Mu", "Niu", email = "mu.niu@plymouth.ac.uk", role = c("aut","cre"))
-Author: Mu Niu [aut, cre],
+Author: Mu Niu [aut, cre]
 Maintainer: Mu Niu <mu.niu@plymouth.ac.uk>
 Description: Parameter inference in differential equations.
 Depends: R (>= 3.3.0)
