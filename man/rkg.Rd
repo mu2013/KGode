@@ -73,7 +73,7 @@ init_yode = t(y_no)
 init_t = t_no
 kkk = ode$new(1,fun=LV_fun,grfun=LV_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
 
-##Use function 'rkg' to estimate the ode parameters. The standard gradient matching method is programmed
+##Use function 'rkg' to estimate the ode parameters. The standard gradient matching method is coded
 ##in the the 'rkg' function. The parameter estimations are stored in the returned vector of 'rkg'.
 ## Choose a kernel type for 'rkhs' interpolation. Two options are provided 'rbf' and 'mlp'. 
 ktype ='rbf'
