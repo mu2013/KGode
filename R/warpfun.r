@@ -12,6 +12,7 @@
 #' @param fixlens vector(of length n_s) containing the initial values of the hyper parameters of sigmoid basis function.
 #' @param y_no matrix(of size n_s*n_o) containing noisy observations. The row(of length n_s) represent the ode states and the column(of length n_o) represents the time points.
 #' @param testData vector(of size n_x) containing user defined time points which will be warped by the warping function.
+#' @param witer scale containing the number of iterations for optimising the hyper parameters of warping.
 #' @return return list containing :
 #' \itemize{ 
 #'	\item{} dtilda - vector(of length n_x) containing the gradients of warping function at user defined time points.  
@@ -21,6 +22,46 @@
 #'	\item{} wkkk - 'ode' class object containing the result of parameter estimation using the warped signal and gradient matching.}   
 #' @export
 #' @examples
+#'\dontshow{
+#'   ##examples for checks: executable in < 5 sec together with the examples above not shown to users
+#'   ### define ode 
+#'   toy_fun = function(t,x,par_ode){
+#'        alpha=par_ode[1]
+#'       as.matrix( c( -alpha*x[1]) )
+#'    }
+#'
+#'    toy_grlNODE= function(par,grad_ode,y_p,z_p) { 
+#'        alpha = par[1]
+#'        dres= c(0)
+#'        dres[1] = sum( 2*( z_p-grad_ode)*y_p*alpha ) #sum( -2*( z_p[1,2:lm]-dz1)*z1*alpha ) 
+#'        dres
+#'    }
+#'
+#'   t_no = c(0.1,1,2,3,4,8)
+#'   n_o = length(t_no)   
+#'   y_no =  matrix( c(exp(-t_no)),ncol=1  )
+#'   ######################## create and initialise ode object #########################################
+#'  init_par = rep(c(0.1))
+#'  init_yode = t(y_no)
+#'  init_t = t_no
+#'
+#'  kkk = ode$new(1,fun=toy_fun,grfun=toy_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
+#'
+#'  ##### standard gradient matching
+#'  ktype='rbf'
+#'  rkgres = rkg(kkk,(y_no),ktype)
+#'  bbb = rkgres$bbb
+#'
+#'  ## warping method 
+#'  peod = 20
+#'  eps= 1
+#'
+#' fixlens = 4  ## the value of fixlens can be estimated using fixlens=warpInitLen(peod,eps,rkgres)
+#' kkkrkg = kkk$clone()
+#' www = warpfun(kkkrkg,bbb,peod,eps,fixlens,y_no,kkkrkg$t,1)
+#' www$wkkk$ode_par   
+#'}
+#'\dontrun{
 #' require(mvtnorm)
 #' noise = 0.1  
 #' SEED = 19537
@@ -68,6 +109,8 @@
 #' init_t = t_no
 #' kkk = ode$new(1,fun=LV_fun,grfun=LV_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
 #'
+#' ## The following examples with CPU or elapsed time > 10s
+#'
 #' ## Use function 'rkg' to estimate the Ode parameters.
 #' ktype ='rbf'
 #' rkgres = rkg(kkk,y_no,ktype)
@@ -89,11 +132,14 @@
 #' resmtest = www$wtime  ## warped time points
 #' ##display the results of parameter estimation using gradient matching in the warped time domain.
 #' www$wkkk$ode_par       
-#'
+#'}
 #' @author Mu Niu \email{mu.niu@plymouth.ac.uk}
 
-warpfun =function(kkkrkg,bbb,peod,eps,fixlens,y_no,testData)
+warpfun =function(kkkrkg,bbb,peod,eps,fixlens,y_no,testData,witer)
 {
+   if(missing(witer)) {
+        witer = 10
+    } 
    kkk= kkkrkg$clone()
    if(missing(testData)) 
    {
@@ -121,7 +167,7 @@ warpfun =function(kkkrkg,bbb,peod,eps,fixlens,y_no,testData)
 		wsigm = Sigmoid$new(1)
 		n_o = max( dim( kkk$y_ode) )
 		bbbs = Warp$new( y_c,kkk$t,rep(1,n_o),lambda_t,wsigm)
-		ppp = bbbs$warpSin( fixlen, 10,p0,eps )   ## 3.9 70db
+		ppp = bbbs$warpSin( fixlen,witer,p0,eps )   ## 3.9 70db
 
 		### learnign warping function using mlp
 		t_me= bbbs$tw #- mean(bbbs$tw)

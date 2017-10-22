@@ -21,6 +21,43 @@
 #'   \item{\code{skcross()}}{This method is used to do cross-validation to estimate the weighting parameter lambda of L^2 norm.} }
 #' @export
 #' @examples
+#'\dontshow{
+#'   ##examples for checks: executable in < 5 sec together with the examples above not shown to users
+#'   ### define ode 
+#'   toy_fun = function(t,x,par_ode){
+#'        alpha=par_ode[1]
+#'       as.matrix( c( -alpha*x[1]) )
+#'    }
+#'
+#'    toy_grlNODE= function(par,grad_ode,y_p,z_p) { 
+#'        alpha = par[1]
+#'        dres= c(0)
+#'        dres[1] = sum( 2*( z_p-grad_ode)*y_p*alpha ) #sum( -2*( z_p[1,2:lm]-dz1)*z1*alpha ) 
+#'        dres
+#'    }
+#'
+#'   t_no = c(0.1,1,2,3,4,8)
+#'   n_o = length(t_no)   
+#'   y_no =  matrix( c(exp(-t_no)),ncol=1  )
+#'   ######################## create and initialise ode object #########################################
+#'  init_par = rep(c(0.1))
+#'  init_yode = t(y_no)
+#'  init_t = t_no
+#'
+#'  kkk = ode$new(1,fun=toy_fun,grfun=toy_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
+#'
+#'  ##### using kernel ridge regression to learn the interpolation of the noisy observation
+#'
+#'  initlen = 1
+#'  aker = RBF$new(initlen)
+#'  bbb = rkhs$new(t(y_no)[1,],t_no,rep(1,n_o),1,aker)
+#' ## optimise lambda by cross-validation
+#' ## initial value of lambda
+#'  initlam = 2
+#'  bbb$skcross( initlam ) 
+#'
+#'}
+#' \dontrun{
 #' require(mvtnorm)
 #' noise = 0.1  ## set the variance of noise
 #' SEED = 19537
@@ -68,6 +105,7 @@
 #' init_t = t_no
 #' kkk = ode$new(1,fun=LV_fun,grfun=LV_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
 #'
+#' ## The following examples with CPU or elapsed time > 5s
 #' ####### rkhs interpolation for the 1st state of ode using 'rbf' kernel
 #' ### set initial value of length scale of rbf kernel
 #' initlen = 1
@@ -80,7 +118,7 @@
 #'
 #' ## make prediction using the 'predict()' method of 'rkhs' class and plot against the time.
 #' plot(t_no,bbb$predict()$pred)
-#'
+#' }
 #' @author Mu Niu, \email{mu.niu@plymouth.ac.uk}
 
 rkhs <- R6Class("rkhs",
@@ -226,6 +264,7 @@ rkhs <- R6Class("rkhs",
 
 	skcross = function( init,bounded ) 
 	 {
+	 	innerlp = 4
 	    tbd = array(c(1), c(length(self$ker$k_par)) )
 	 	if( missing(bounded) )
 	    {  
@@ -257,7 +296,7 @@ rkhs <- R6Class("rkhs",
 		  {
 		    crlambda=c(5,1,0.1,0.01,1e-03,1e-04)
 		    #crlambda=c(100,10,5,1,0.1,0.01,1e-03,1e-04,1e-05,1e-06,1e-07)
-		    for(iii in 1:4)
+		    for(iii in 1:innerlp)
 		    {
 		    n_l = length(crlambda)
 		    cres = matrix(c(0),ncol=n_l,nrow=1)
@@ -339,6 +378,7 @@ rkhs <- R6Class("rkhs",
 
     mkcross = function(init) 
 	 	{
+	 		innerlp = 2
 	 		y = scale(as.matrix(self$y), center=TRUE, scale=FALSE)
 	 		#mean_y= apply(as.matrix(self$y),2,mean)
 	 		t_y = matrix(c(self$t),ncol=dim(y)[1])
@@ -360,7 +400,7 @@ rkhs <- R6Class("rkhs",
 	 		  {
 	 		  	crlambda=crll[[index]]
 	 		    #crlambda=c(100,10,5,1,0.1,0.01,1e-03,1e-04,1e-05,1e-06,1e-07)
-	 		    for(iii in 1:4)
+	 		    for(iii in 1:innerlp)
 	 		    {
 	 		    n_l = length(crlambda)
 	 		    cres = matrix(c(0),ncol=n_l,nrow=1)

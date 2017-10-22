@@ -19,6 +19,46 @@
 #'	\item{} ress -vector containing the cross validation error for all choices of weighting parameter.}   
 #' @export
 #' @examples
+#'\dontshow{
+#'   ##examples for checks: executable in < 5 sec together with the examples above not shown to users
+#'   ### define ode 
+#'   toy_fun = function(t,x,par_ode){
+#'        alpha=par_ode[1]
+#'       as.matrix( c( -alpha*x[1]) )
+#'    }
+#'
+#'    toy_grlNODE= function(par,grad_ode,y_p,z_p) { 
+#'        alpha = par[1]
+#'        dres= c(0)
+#'        dres[1] = sum( 2*( z_p-grad_ode)*y_p*alpha ) #sum( -2*( z_p[1,2:lm]-dz1)*z1*alpha ) 
+#'        dres
+#'    }
+#'
+#'   t_no = c(0.1,1,2,3,4,8)
+#'   n_o = length(t_no)   
+#'   y_no =  matrix( c(exp(-t_no)),ncol=1  )
+#'   ######################## create and initialise ode object #########################################
+#'  init_par = rep(c(0.1))
+#'  init_yode = t(y_no)
+#'  init_t = t_no
+#'
+#'  kkk = ode$new(1,fun=toy_fun,grfun=toy_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
+#'
+#'  ##### standard gradient matching
+#'  ktype='rbf'
+#'  rkgres = rkg(kkk,(y_no),ktype)
+#'  bbb = rkgres$bbb
+#'
+#' ############ gradient matching + ode regularisation
+#' crtype='i'
+#' lam=c(1e-4,1e-5)
+#' lamil1 = crossv(lam,kkk,bbb,crtype,y_no)
+#' lambdai1=lamil1[[1]]
+#' res = third(lambdai1[1],kkk,bbb,crtype)
+#' ## display ode parameters
+#' res$oppar
+#'}
+#'\dontrun{
 #' require(mvtnorm)
 #' noise = 0.1  
 #' SEED = 19537
@@ -66,6 +106,8 @@
 #' init_t = t_no
 #' kkk = ode$new(1,fun=LV_fun,grfun=LV_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
 #'
+#' ## The following examples with CPU or elapsed time > 10s
+#'
 #' ## Use function 'rkg' to estimate the Ode parameters.
 #' ktype ='rbf'
 #' rkgres = rkg(kkk,y_no,ktype)
@@ -77,7 +119,7 @@
 #' lam=c(1e-4,1e-5)
 #' lamil1 = crossv(lam,kkk,bbb,crtype,y_no)
 #' lambdai1=lamil1[[1]]
-#'
+#'}
 #' @author Mu Niu \email{mu.niu@plymouth.ac.uk}
 
 crossv = function(lam,kkk,bbb,crtype,y_no,woption,resmtest,dtilda,fold)
@@ -89,7 +131,7 @@ lop=length(lam)
 set.seed(19573)
 radsp = sample( length( kkk$t ) ) 
 Xdata = kkk$t[ radsp ]    
-Ydata=y_no[radsp,]
+Ydata = as.matrix( y_no[radsp,] )
 ## create 2 equally size folds
 if(missing(fold)) 
  {
@@ -115,7 +157,7 @@ for( ll in 1:lop)
    {
 	  testIndexes = which(folds==fdi,arr.ind=TRUE)
 	  y_test = t(Ydata[testIndexes,])
-      y_train = Ydata[-testIndexes,]
+      y_train = as.matrix( Ydata[-testIndexes,] )
       ntrain = length(kkk$t) - length(testIndexes)
 
       if(woption=='nw'){

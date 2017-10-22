@@ -117,6 +117,7 @@ ode<-R6Class("ode",
 	lossNODE= function( par,y_p,z_p) {
 		par_ode= exp(par)
         grad_ode = self$gradient(y_p,par_ode)
+        dim(grad_ode) = dim(z_p)
 		lm = max(dim(y_p)) 
 		res=0
 		start = 2
@@ -129,6 +130,7 @@ ode<-R6Class("ode",
 		par_ode= exp(par)   ## ode par
 		lm = max(dim(y_p))
         grad_ode = self$gradient(y_p,par_ode)
+        dim(grad_ode) = dim(z_p)
         start = 2
 		dres=self$gr_lNODE( par_ode,grad_ode[,start:lm],y_p[,start:lm],z_p[,start:lm] )
 		#dres=self$gr_lNODE( par_ode,grad_ode,y_p,z_p )

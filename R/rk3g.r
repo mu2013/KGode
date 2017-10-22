@@ -83,7 +83,8 @@ rkg3 <- R6Class("rkg3",
              for(j in 1:nd) {
                 y_p[j,] =  self$rk[[j]]$predict()$pred 
               }
-             dzl=self$odem$gradient(y_p,self$odem$ode_par) 
+             dzl=self$odem$gradient(y_p,self$odem$ode_par)
+             dim(dzl) = dim(y_p)  
              for(j in 1:nd) {
                 lbl[j,]=( fstl[,,j] + lamb*dzl[j,]%*%(z_tkl[,,j]) ) %*% SKl[,,j]
                 self$rk[[j]]$b = lbl[j,] 
@@ -168,6 +169,7 @@ rkg3 <- R6Class("rkg3",
                 y_p[j,] =  self$rk[[j]]$predict()$pred 
               }
              dzl=self$odem$gradient(y_p,self$odem$ode_par) 
+             dim(dzl) = dim(y_p) 
              for(j in 1:nd) {
                 #wkdot = (z_tkl[,,j])*(oo) 
                 lbl[j,] = ( fstl[,,j] + lamb*dzl[j,]%*%z_tkl[,,j]*dtilda[j,] ) %*% SKl[,,j]
@@ -222,7 +224,7 @@ rkg3 <- R6Class("rkg3",
       res =res+ sum( (self$rk[[j]]$y-y_t[j,])^2 )
       }
       dzl=self$odem$gradient(y_t,par_ode) 
-    
+      dim(dzl) = dim(y_t) 
       res = res  + lam*sum( (z_t- dzl)^2 )
       res
     },
@@ -247,7 +249,7 @@ rkg3 <- R6Class("rkg3",
       res =res+ sum( (self$rk[[j]]$y-y_t[j,])^2 )
       }
       dzl=self$odem$gradient(y_t,par_ode) 
-    
+      dim(dzl) = dim(y_t) 
       res = res  + lam*sum( (z_t- dzl)^2 )
       res
     },
@@ -339,7 +341,7 @@ rkg3 <- R6Class("rkg3",
        res =res+ sum( (self$rk[[j]]$y-y_t[j,])^2 )
       }
       dzl=self$odem$gradient(y_t,par_ode) 
-    
+      dim(dzl) = dim(y_t) 
       res = res  + sum( (z_t- dzl)^2 )
       res
     }
