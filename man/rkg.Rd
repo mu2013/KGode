@@ -26,6 +26,37 @@ This function is used to create 'rkhs' class object and estimate ode parameters 
 Arguments of the 'rkg' function are 'ode' class, noisy observation, and kernel type. It return the interpolation for each of the ode states. The Ode parameters are estimated using gradient matching, and the results are stored in the 'ode' class as the ode_par attribute.
 }
 \examples{
+\dontshow{
+  ##examples for checks: executable in < 5 sec together with the examples above not shown to users
+  ### define ode 
+  toy_fun = function(t,x,par_ode){
+       alpha=par_ode[1]
+      as.matrix( c( -alpha*x[1]) )
+   }
+
+   toy_grlNODE= function(par,grad_ode,y_p,z_p) { 
+       alpha = par[1]
+       dres= c(0)
+       dres[1] = sum( 2*( z_p-grad_ode)*y_p*alpha ) #sum( -2*( z_p[1,2:lm]-dz1)*z1*alpha ) 
+       dres
+   }
+
+  t_no = c(0.1,1,2,3,4,8)
+  n_o = length(t_no)   
+  y_no =  matrix( c(exp(-t_no)),ncol=1  )
+  ######################## create and initialise ode object #########################################
+ init_par = rep(c(0.1))
+ init_yode = t(y_no)
+ init_t = t_no
+
+ kkk = ode$new(1,fun=toy_fun,grfun=toy_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
+
+ ##### standard gradient matching
+ ktype='rbf'
+ rkgres = rkg(kkk,(y_no),ktype)
+ kkk$ode_par
+}
+\dontrun{
 require(mvtnorm)
 noise = 0.1  ## set the variance of noise
 SEED = 19537
@@ -73,6 +104,8 @@ init_yode = t(y_no)
 init_t = t_no
 kkk = ode$new(1,fun=LV_fun,grfun=LV_grlNODE,t=init_t,ode_par= init_par, y_ode=init_yode )
 
+## The following examples with CPU or elapsed time > 10s
+
 ##Use function 'rkg' to estimate the ode parameters. The standard gradient matching method is coded
 ##in the the 'rkg' function. The parameter estimations are stored in the returned vector of 'rkg'.
 ## Choose a kernel type for 'rkhs' interpolation. Two options are provided 'rbf' and 'mlp'. 
@@ -80,7 +113,7 @@ ktype ='rbf'
 rkgres = rkg(kkk,y_no,ktype)
 ## show the results of ode parameter estimation using the standard gradient matching
 kkk$ode_par
-
+}
 }
 \author{
 Mu Niu \email{mu.niu@plymouth.ac.uk}
