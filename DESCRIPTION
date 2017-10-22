@@ -1,10 +1,10 @@
 Package: KGode
-Title: Parameter inference in dynamical systems (ordinary differential equations)
+Title: Kernel based Gradient matching for parameter inference in ordinary differential equations
 Version: 1.0.0
 Authors@R: person("Mu", "Niu", email = "mu.niu@plymouth.ac.uk", role = c("aut","cre"))
 Author: Mu Niu [aut, cre]
 Maintainer: Mu Niu <mu.niu@plymouth.ac.uk>
-Description: Parameter inference in differential equations.
+Description: This package implements the kernel ridge regression and the gradient matching algorithm proposed in Niu et al. (2016) <http://jmlr.org/proceedings/papers/v48/niu16.html> and the warping algorithm proposed in Niu et al. (2017) <DOI:10.1007/s00180-017-0753-z> for parameter inference in differential equations. Four schemes are provided for improving parameter estimation in odes by using the odes regularisation and warping.
 Depends: R (>= 3.3.0)
 License: GPL (>= 2)
 Imports: R6,pracma,pspline,mvtnorm
