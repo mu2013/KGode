@@ -7,29 +7,31 @@
 #' @param kkk ode class object.
 #' @param y_no matrix(of size n_s*n_o) containing noisy observations. The row(of length n_s) represent the ode states and the column(of length n_o) represents the time points.
 #' @param ktype character containing kernel type. User can choose 'rbf' or 'mlp' kernel.
+#' @param K an optional parameter specifying the number of bootstrap replicates to generate for the estimation of parameter uncertainty.
 #' @return return list containing :
-#' \itemize{ 
-#'	\item{} intp - list containing interpolation for each ode state.  
-#'	\item{} bbb - rkhs class objects for each ode state. }   
+#' \itemize{
+#'	\item{} intp - list containing interpolation for each ode state.
+#'	\item{} bbb - rkhs class objects for each ode state. }
+#'	\item{} quartiles - the quartiles for parameter estimated from bootstrap procedure. Only returned when K is set. }
 #' @export
 #' @examples
 #'\dontshow{
 #'   ##examples for checks: executable in < 5 sec together with the examples above not shown to users
-#'   ### define ode 
+#'   ### define ode
 #'   toy_fun = function(t,x,par_ode){
 #'        alpha=par_ode[1]
 #'       as.matrix( c( -alpha*x[1]) )
 #'    }
 #'
-#'    toy_grlNODE= function(par,grad_ode,y_p,z_p) { 
+#'    toy_grlNODE= function(par,grad_ode,y_p,z_p) {
 #'        alpha = par[1]
 #'        dres= c(0)
-#'        dres[1] = sum( 2*( z_p-grad_ode)*y_p*alpha ) #sum( -2*( z_p[1,2:lm]-dz1)*z1*alpha ) 
+#'        dres[1] = sum( 2*( z_p-grad_ode)*y_p*alpha ) #sum( -2*( z_p[1,2:lm]-dz1)*z1*alpha )
 #'        dres
 #'    }
 #'
 #'   t_no = c(0.1,1,2,3,4,8)
-#'   n_o = length(t_no)   
+#'   n_o = length(t_no)
 #'   y_no =  matrix( c(exp(-t_no)),ncol=1  )
 #'   ######################## create and initialise ode object #########################################
 #'  init_par = rep(c(0.1))
@@ -48,7 +50,7 @@
 #' noise = 0.1  ## set the variance of noise
 #' SEED = 19537
 #' set.seed(SEED)
-#' ## Define ode function, we use lotka-volterra model in this example. 
+#' ## Define ode function, we use lotka-volterra model in this example.
 #' ## we have two ode states x[1], x[2] and four ode parameters alpha, beta, gamma and delta.
 #' LV_fun = function(t,x,par_ode){
 #'   alpha=par_ode[1]
@@ -57,12 +59,12 @@
 #'   delta=par_ode[4]
 #'   as.matrix( c( alpha*x[1]-beta*x[2]*x[1] , -gamma*x[2]+delta*x[1]*x[2] ) )
 #' }
-#' ## Define the gradient of ode function against ode parameters 
+#' ## Define the gradient of ode function against ode parameters
 #' ## df/dalpha,  df/dbeta, df/dgamma, df/ddelta where f is the differential equation.
-#' LV_grlNODE= function(par,grad_ode,y_p,z_p) { 
+#' LV_grlNODE= function(par,grad_ode,y_p,z_p) {
 #' alpha = par[1]; beta= par[2]; gamma = par[3]; delta = par[4]
 #' dres= c(0)
-#' dres[1] = sum( -2*( z_p[1,]-grad_ode[1,])*y_p[1,]*alpha ) 
+#' dres[1] = sum( -2*( z_p[1,]-grad_ode[1,])*y_p[1,]*alpha )
 #' dres[2] = sum( 2*( z_p[1,]-grad_ode[1,])*y_p[2,]*y_p[1,]*beta)
 #' dres[3] = sum( 2*( z_p[2,]-grad_ode[2,])*gamma*y_p[2,] )
 #' dres[4] = sum( -2*( z_p[2,]-grad_ode[2,])*y_p[2,]*y_p[1,]*delta)
@@ -76,7 +78,7 @@
 #' ## set the time interval for the ode numerical solver.
 #' tinterv = c(0,6)
 #' ## solve the ode numerically using predefined ode parameters. alpha=1, beta=1, gamma=4, delta=1.
-#' kkk0$solve_ode(c(1,1,4,1),xinit,tinterv) 
+#' kkk0$solve_ode(c(1,1,4,1),xinit,tinterv)
 #'
 #' ## Add noise to the numerical solution of the ode model and use it as the noisy observation.
 #' n_o = max( dim( kkk0$y_ode) )
@@ -95,7 +97,7 @@
 #'
 #' ##Use function 'rkg' to estimate the ode parameters. The standard gradient matching method is coded
 #' ##in the the 'rkg' function. The parameter estimations are stored in the returned vector of 'rkg'.
-#' ## Choose a kernel type for 'rkhs' interpolation. Two options are provided 'rbf' and 'mlp'. 
+#' ## Choose a kernel type for 'rkhs' interpolation. Two options are provided 'rbf' and 'mlp'.
 #' ktype ='rbf'
 #' rkgres = rkg(kkk,y_no,ktype)
 #' ## show the results of ode parameter estimation using the standard gradient matching
@@ -103,31 +105,51 @@
 #'}
 #' @author Mu Niu \email{mu.niu@plymouth.ac.uk}
 
-rkg = function(kkk,y_no,ktype)
-{
-nst = dim(kkk$y_ode)[1]
-npar = length(kkk$ode_par)
-bbb=c()
-intp= c()
-grad= c()
-n_o = max( dim( y_no) )
-for (st in 1:nst)
- {
-	if (ktype=='rbf'){
-		ann1 = RBF$new(1)
-		bbb1 = rkhs$new(t(y_no)[st,],kkk$t,rep(1,n_o),1,ann1)
-		bbb1$skcross(c(2) ) 
-	} else if(ktype=='mlp'){
-		ann1 = MLP$new(c(5,5))
-		bbb1 = rkhs$new(t(y_no)[st,],kkk$t,rep(1,n_o),1,ann1)
-		bbb1$mkcross(c(5,5))
-	}
-	bbb=c(bbb,bbb1)
-	intp = rbind(intp,bbb[[st]]$predict()$pred)
-	grad = rbind(grad,bbb[[st]]$predict()$grad)
- }
+rkg = function(kkk, y_no, ktype, K=NULL) {
+  nst = dim(kkk$y_ode)[1]
+  npar = length(kkk$ode_par)
+  bbb = c()
+  intp = c()
+  grad = c()
+  n_o = max( dim( y_no) )
+  for (st in 1:nst) {
+  	if (ktype == 'rbf') {
+      ann1 = RBF$new(1)
+  		bbb1 = rkhs$new(t(y_no)[st,], kkk$t, rep(1,n_o), 1, ann1)
+  		bbb1$skcross(c(2) )
+  	} else if(ktype == 'mlp') {
+  		ann1 = MLP$new(c(5, 5))
+  		bbb1 = rkhs$new(t(y_no)[st,], kkk$t, rep(1,n_o), 1, ann1)
+  		bbb1$mkcross(c(5, 5))
+  	}
+  	bbb=c(bbb, bbb1)
+  	intp = rbind(intp, bbb[[st]]$predict()$pred)
+  	grad = rbind(grad, bbb[[st]]$predict()$grad)
+  }
 
-inipar= rep(0.1,npar)
-kkk$optim_par( inipar, intp, grad )
-return(list("bbb"=bbb,"intp"=intp))
+  inipar= rep(0.1,npar)
+  if ( ! is.null(K) ) {
+
+    # Calculate parametric bootstrap resamples
+    ode_pars = array(dim=c(0, length(kkk$ode_par)))
+    for ( i in 1:K ) {
+      residuals = kkk$y_ode - intp
+      resampled_residuals = t(apply(residuals, 1, function(row) sample(row, length(row), replace=TRUE)))
+      resampled_data = intp + resampled_residuals
+
+      new_kkk = ode$new(1, fun=kkk$ode_fun, grfun=kkk$gr_lNODE, t=kkk$t,
+                        ode_par=kkk$ode_par, y_ode=resampled_data)
+      x = rkg(new_kkk, t(resampled_data), ktype)
+      new_ode_par = new_kkk$ode_par
+
+      ode_pars = rbind(ode_pars, new_ode_par)
+      quartiles = apply(ode_pars, 2, quantile)
+    }
+    return(list("bbb"=bbb, "intp"=intp, "quartiles"=quartiles))
+
+  } else {
+    kkk$optim_par( inipar, intp, grad )
+    return(list("bbb"=bbb, "intp"=intp))
+  }
+
 }
