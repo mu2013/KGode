@@ -1,6 +1,6 @@
 Package: KGode
 Title: Kernel Based Gradient Matching for Parameter Inference in Ordinary Differential Equations
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: person("Mu", "Niu", email = "mu.niu@plymouth.ac.uk", role = c("aut","cre"))
 Author: Mu Niu [aut, cre]
 Maintainer: Mu Niu <mu.niu@plymouth.ac.uk>
