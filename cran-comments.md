@@ -1,7 +1,7 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Added a new bootstrap function to estimate parameter uncertainty.
+* Change the email address from mu.niu@plymouth.ac.uk to mu.niu@glasgow.ac.uk
 
 ## Test environments
 * local OS X install, R 3.3.0
