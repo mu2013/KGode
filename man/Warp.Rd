@@ -37,6 +37,6 @@ This class provide the warping method which can be used to warp the original sig
 }
 
 \author{
-Mu Niu, \email{mu.niu@plymouth.ac.uk}
+Mu Niu, \email{mu.niu@glasgow.ac.uk}
 }
 \keyword{data}

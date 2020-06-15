@@ -15,6 +15,6 @@ an  \code{\link{R6Class}} object which can be used for the rkhs interpolation.
 This a R6 class. It inherits from 'kernel' class. It provides the mlp kernel function and the 1st order derivative of mlp kernel function.
 }
 \author{
-Mu Niu, \email{mu.niu@plymouth.ac.uk}
+Mu Niu, \email{mu.niu@glasgow.ac.uk}
 }
 \keyword{data}

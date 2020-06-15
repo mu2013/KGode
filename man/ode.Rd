@@ -77,6 +77,6 @@ kkk = ode$new(1,fun=LV_fun,grfun=LV_grlNODE,t=init_t,ode_par= init_par, y_ode=in
 
 }
 \author{
-Mu Niu, \email{ mu.niu@plymouth.ac.uk}
+Mu Niu, \email{ mu.niu@glasgow.ac.uk}
 }
 \keyword{data}

@@ -29,6 +29,6 @@ This a abstract class     provide the kernel function and the 1st order derivati
 }
 
 \author{
-Mu Niu, \email{mu.niu@plymouth.ac.uk}
+Mu Niu, \email{mu.niu@glasgow.ac.uk}
 }
 \keyword{data}

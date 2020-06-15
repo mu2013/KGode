@@ -31,6 +31,6 @@ This class provides advanced gradient matching method by using the ode as a regu
 }
 
 \author{
-Mu Niu, \email{mu.niu@plymouth.ac.uk}
+Mu Niu, \email{mu.niu@glasgow.ac.uk}
 }
 \keyword{data}
