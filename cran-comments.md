@@ -1,10 +1,10 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Change the email address from mu.niu@plymouth.ac.uk to mu.niu@glasgow.ac.uk
+* Added a new diagnostic function.
 
 ## Test environments
-* local OS X install, R 3.3.0
+* local OS X install, R 3.5.1 
 * ubuntu 12.04 (on travis-ci), R 3.3.0
 * win-builder (devel and release)
 
